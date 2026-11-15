@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  LearningTracker
-//
-//  Created by Amal Almalki on 29/05/1448 AH.
-//
-
 import SwiftUI
 
 struct ContentView: View {
