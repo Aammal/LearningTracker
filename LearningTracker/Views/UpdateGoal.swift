@@ -120,15 +120,32 @@ struct UpdateGoal: View {
         _ title: String,
         duration: GoalDuration
     ) -> some View {
-        Button {
+        let isSelected = viewModel.duration == duration
+        let shape = Capsule()
+
+        return Button {
             viewModel.duration = duration
         } label: {
-            Capsule()
-                .fill(viewModel.duration == duration ? .orange1 : .gray1)
+            Text(title)
+                .font(.system(size: 17))
+                .foregroundStyle(isSelected ? .white : .gray)
                 .frame(width: 95, height: 45)
+                .background {
+                    shape.fill(isSelected ? Color.orange1 : Color.gray1)
+                }
                 .overlay {
-                    Text(title)
-                        .foregroundStyle(.white)
+                    shape.strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                .white.opacity(0.38),
+                                .white.opacity(0.08),
+                                .white.opacity(0.18)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        ),
+                        lineWidth: 1
+                    )
                 }
         }
         .buttonStyle(.plain)

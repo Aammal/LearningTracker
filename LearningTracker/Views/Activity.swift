@@ -104,12 +104,13 @@ struct Activity: View {
                     }
                 }
 
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     statCard(
                         symbol: "flame.fill",
                         color: .orange1,
                         count: viewModel.learnedDays,
                         title: "Learned"
+                        
                     )
 
                     statCard(
@@ -119,6 +120,7 @@ struct Activity: View {
                         title: "Freezed"
                     )
                 }
+                
                 Spacer(minLength: 32)
 
                 switch outcome {
@@ -171,7 +173,7 @@ struct Activity: View {
                         Text(viewModel.todayStatus == .frozen ? "Freezed for a day" : "Freeze for a day")
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 46)
+                            .frame(width: 295 , height: 46)
                             .background(
                                 Capsule()
                                     .fill(viewModel.canFreezeToday ? .cyan : .gray1)
@@ -207,7 +209,9 @@ struct Activity: View {
         count: Int,
         title: String
     ) -> some View {
-        VStack(spacing: 6) {
+        let shape = RoundedRectangle(cornerRadius: 30, style: .continuous)
+
+        return VStack(spacing: 6) {
             Image(systemName: symbol)
                 .foregroundStyle(color)
 
@@ -220,14 +224,24 @@ struct Activity: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 94)
-        .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(.gray1)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 30)
-                .stroke(.white.opacity(0.25), lineWidth: 1)
-        )
+        .background {
+            shape.fill(Color.white.opacity(0.10))
+        }
+        .overlay {
+            shape.strokeBorder(
+                LinearGradient(
+                    colors: [
+                        .white.opacity(0.30),
+                        .white.opacity(0.08),
+                        .white.opacity(0.18)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                lineWidth: 1
+            )
+        }
+        .shadow(color: .black.opacity(0.28), radius: 12, x: 0, y: 7)
     }
 }
 
