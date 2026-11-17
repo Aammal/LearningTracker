@@ -1,3 +1,5 @@
+![LearningTracker app preview](./learningtracker-preview.png)
+
 # LearningTracker
 
 An iOS app that helps users build a daily learning habit and track their progress toward a goal. Users choose a topic and goal duration, then mark each day as a learning day or a freeze day to track their activity toward that goal.
