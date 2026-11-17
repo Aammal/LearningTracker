@@ -1,8 +1,9 @@
 import SwiftUI
 
 struct Onboarding: View {
-    @State private var topic = ""
-    @State var duration = "Week"
+    @StateObject private var viewModel = OnboardingViewModel()
+    var onStart: (LearningGoal) -> Void = { _ in }
+    
     var body: some View {
         ZStack{
             Color.black.ignoresSafeArea()
@@ -36,7 +37,7 @@ struct Onboarding: View {
 
                     Text("I want to learn")
                     
-                    TextField("Topic", text: $topic, prompt: Text("Swift").foregroundStyle(.gray))
+                    TextField("Topic", text: $viewModel.topic, prompt: Text("Swift").foregroundStyle(.gray))
                     
                     Divider().background(Color.gray)
                     
@@ -50,10 +51,10 @@ struct Onboarding: View {
                     
                     HStack{
                         Button{
-                            duration = "Week"
+                            viewModel.duration = .week
                         } label: {
                             Capsule()
-                                .fill(duration == "Week" ? .orange1 : .gray1)
+                                .fill(viewModel.duration == .week ? .orange1 : .gray1)
                                 .frame(width: 95, height: 45)
                                 .overlay{
                                     Text("Week")
@@ -63,10 +64,10 @@ struct Onboarding: View {
                         
                         
                         Button{
-                            duration = "Month"
+                            viewModel.duration = .month
                         } label: {
                             Capsule()
-                                .fill(duration == "Month" ? .orange1 : .gray1)
+                                .fill(viewModel.duration == .month ? .orange1 : .gray1)
                                 .frame(width: 95, height: 45)
                                 .overlay{
                                     Text("Month")
@@ -75,11 +76,11 @@ struct Onboarding: View {
                         }
                         
                         Button{
-                            duration = "Year"
+                            viewModel.duration = .year
                             
                         } label: {
                             Capsule()
-                                .fill(duration == "Year" ? .orange1 : .gray1)
+                                .fill(viewModel.duration == .year ? .orange1 : .gray1)
                                 .frame(width: 95, height: 45)
                                 .overlay{
                                     Text("Year")
@@ -100,7 +101,9 @@ struct Onboarding: View {
                     Spacer()
 
                     Button{
-                        
+                        if let goal = viewModel.createGoal() {
+                              onStart(goal)
+                          }
                     }label: {
                         Capsule()
                             .fill(.orange1)
