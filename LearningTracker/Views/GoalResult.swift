@@ -21,16 +21,13 @@ struct GoalResult: View {
                 .foregroundStyle(.gray)
 
             Button(action: onSetGoal) {
-                Capsule()
-                    .fill(.orange1)
-                    .frame(width: 140, height: 46)
-                    .overlay {
-                        HStack(spacing: 6) {
-                            Image(systemName: "pencil.and.outline")
-                            Text("Set a goal")
-                        }
-                        .foregroundStyle(.white)
-                    }
+                HStack(spacing: 6) {
+                    Image(systemName: "pencil.and.outline")
+                    Text("Set a goal")
+                }
+                .foregroundStyle(.white)
+                .frame(width: 140, height: 46)
+                .glass(Capsule(), fill: .orange1)
             }
             .buttonStyle(.plain)
             .padding(.top, 32)

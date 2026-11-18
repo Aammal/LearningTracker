@@ -1,6 +1,7 @@
+// GoalOutcome.swift
 import Foundation
 
-enum GoalOutcome {
+enum GoalOutcome: Codable {
     case completed
     case failed
 }

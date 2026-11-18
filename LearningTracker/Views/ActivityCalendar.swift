@@ -41,9 +41,10 @@ struct ActivityCalendar: View {
                 Image(systemName: "chevron.left")
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
-                    .background(Circle().fill(.gray1))
+                    .glass(Circle(), fill: .gray1  , shine: 0.005)
             }
-
+            .buttonStyle(.plain)
+            
             Spacer()
 
             Text("Activities")
@@ -90,8 +91,8 @@ struct ActivityCalendar: View {
         var background: Color = .clear
         var textColor: Color = .white
 
-        if isToday {
-            background = status == .frozen ? .cyan : .orange1
+        if isToday && status == nil {
+            background = .orange1
         } else if status == .learned {
             background = .orange2
             textColor = .orange1

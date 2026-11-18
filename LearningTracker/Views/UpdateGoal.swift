@@ -21,12 +21,17 @@ struct UpdateGoal: View {
         self.onUpdate = onUpdate
     }
 
+    private var topicIsEmpty: Bool {
+        viewModel.topic
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .isEmpty
+    }
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
-                // العنوان وزر الرجوع والحفظ
                 HStack {
                     Button {
                         dismiss()
@@ -34,8 +39,9 @@ struct UpdateGoal: View {
                         Image(systemName: "chevron.left")
                             .foregroundStyle(.white)
                             .frame(width: 44, height: 44)
-                            .background(Circle().fill(.gray1))
+                            .glass(Circle(), fill: .gray1)
                     }
+                    .buttonStyle(.plain)
 
                     Spacer()
 
@@ -61,13 +67,11 @@ struct UpdateGoal: View {
                             .foregroundStyle(.white)
                             .font(.system(size: 20, weight: .semibold))
                             .frame(width: 44, height: 44)
-                            .background(Circle().fill(.orange1))
+                            .glass(Circle(), fill: .orange1)
                     }
-                    .disabled(
-                        viewModel.topic
-                            .trimmingCharacters(in: .whitespacesAndNewlines)
-                            .isEmpty
-                    )
+                    .buttonStyle(.plain)
+                    .disabled(topicIsEmpty)
+                    .opacity(topicIsEmpty ? 0.5 : 1)
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -98,21 +102,31 @@ struct UpdateGoal: View {
             }
             .padding(.horizontal, 20)
             .padding(.top, 12)
-        }
-        .alert("Update goal", isPresented: $showResetAlert) {
-            Button("Dismiss", role: .cancel) {
-                updatedGoal = nil
-            }
 
-            Button("Update") {
-                if let updatedGoal {
-                    onUpdate(updatedGoal)
-                    dismiss()
+            if showResetAlert {
+                ZStack {
+                    Color.black.opacity(0.6).ignoresSafeArea()
+
+                    GoalAlert(
+                        title: "Update goal",
+                        message: "If you update now, your streak will start over.",
+                        onDismiss: {
+                            updatedGoal = nil
+                            showResetAlert = false
+                        },
+                        onConfirm: {
+                            if let updatedGoal {
+                                onUpdate(updatedGoal)
+                                dismiss()
+                            }
+                        }
+                    )
+                    .padding(.horizontal, 40)
                 }
+                .transition(.opacity)
             }
-        } message: {
-            Text("If you update now, your streak will start over.")
         }
+        .animation(.easeInOut(duration: 0.2), value: showResetAlert)
         .toolbar(.hidden, for: .navigationBar)
     }
 
@@ -121,7 +135,6 @@ struct UpdateGoal: View {
         duration: GoalDuration
     ) -> some View {
         let isSelected = viewModel.duration == duration
-        let shape = Capsule()
 
         return Button {
             viewModel.duration = duration
@@ -130,25 +143,8 @@ struct UpdateGoal: View {
                 .font(.system(size: 17))
                 .foregroundStyle(isSelected ? .white : .gray)
                 .frame(width: 95, height: 45)
-                .background {
-                    shape.fill(isSelected ? Color.orange1 : Color.gray1)
-                }
-                .overlay {
-                    shape.strokeBorder(
-                        LinearGradient(
-                            colors: [
-                                .white.opacity(0.38),
-                                .white.opacity(0.08),
-                                .white.opacity(0.18)
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        ),
-                        lineWidth: 1
-                    )
-                }
+                .glass(Capsule(), fill: isSelected ? .orange1 : .gray1)
         }
         .buttonStyle(.plain)
     }
 }
-

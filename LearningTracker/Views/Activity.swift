@@ -1,20 +1,21 @@
 import SwiftUI
+import Combine
 
 struct Activity: View {
 
     @StateObject private var viewModel: ActivityViewModel
     @State private var showUpdateGoal = false
-    @State private var outcome: GoalOutcome? = nil
     @State private var needsUpdateConfirmation = true
     @State private var showCalendar = false
-    
+    @Environment(\.scenePhase) private var scenePhase
+
+    private let timer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
+
     init(goal: LearningGoal) {
-        self.goal = goal
         _viewModel = StateObject(
             wrappedValue: ActivityViewModel(goal: goal)
         )
     }
-    let goal: LearningGoal
 
     var body: some View {
         ZStack{
@@ -35,42 +36,21 @@ struct Activity: View {
                                 .font(.system(size: 23))
                                 .foregroundStyle(.white)
                                 .frame(width: 44, height: 44)
-                                .background(Circle().fill(.gray1))
-                                .overlay(
-                                    Circle().stroke(
-                                        LinearGradient(
-                                            colors: [.white.opacity(0.5), .white.opacity(0.05)],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ),
-                                        lineWidth: 1
-                                    )
-                                )
-                                .shadow(color: .black.opacity(0.5), radius: 10, y: 0)
+                                .glass(Circle(), fill: .gray1)
                         }
+                        .buttonStyle(.plain)
 
                         Button{
                             needsUpdateConfirmation = true
                             showUpdateGoal = true
-
                         } label: {
                             Image(systemName: "pencil.and.outline")
                                 .font(.system(size: 23))
                                 .foregroundStyle(.white)
                                 .frame(width: 44, height: 44)
-                                .background(Circle().fill(.gray1))
-                                .overlay(
-                                    Circle().stroke(
-                                        LinearGradient(
-                                            colors: [.white.opacity(0.5), .white.opacity(0.05)],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        ),
-                                        lineWidth: 1
-                                    )
-                                )
-                                .shadow(color: .black.opacity(0.5), radius: 10, y: 0)
+                                .glass(Circle(), fill: .gray1)
                         }
+                        .buttonStyle(.plain)
 
                     }
 
@@ -83,22 +63,19 @@ struct Activity: View {
 
                 HStack(spacing: 0) {
                     ForEach(0..<7, id: \.self) { index in
+                        let date = viewModel.weekDates[index]
+                        let colors = dayColors(for: date)
+
                         VStack(spacing: 8) {
                             Text(viewModel.weekdayLetters[index])
                                 .font(.system(size: 13))
                                 .foregroundStyle(.white)
 
-                            let date = viewModel.weekDates[index]
-                            let todayColor: Color = viewModel.todayStatus == .frozen ? .cyan : .orange1
-
                             Text(date.formatted(.dateTime.day()))
                                 .font(.system(size: 17))
-                                .foregroundStyle(viewModel.isToday(date) ? .white : .white)
+                                .foregroundStyle(colors.text)
                                 .frame(width: 44, height: 44)
-                                .background {
-                                    if viewModel.isToday(date) {
-                                        Circle().fill(todayColor)                                    }
-                                }
+                                .background(Circle().fill(colors.circle))
                         }
                         .frame(maxWidth: .infinity)
                     }
@@ -110,7 +87,6 @@ struct Activity: View {
                         color: .orange1,
                         count: viewModel.learnedDays,
                         title: "Learned"
-                        
                     )
 
                     statCard(
@@ -120,47 +96,44 @@ struct Activity: View {
                         title: "Freezed"
                     )
                 }
-                
+
                 Spacer(minLength: 32)
 
-                switch outcome {
-                    case .completed:
-                        GoalResult(
-                            symbol: "hands.clap.fill",
-                            title: "Will done!",
-                            subtitle: "Ready for your next goal?",
-                            onSetGoal: {
-                                needsUpdateConfirmation = false
-                                showUpdateGoal = true
-                            }                        )
+                switch viewModel.outcome {
+                case .completed:
+                    GoalResult(
+                        symbol: "hands.clap.fill",
+                        title: "Will done!",
+                        subtitle: "Ready for your next goal?",
+                        onSetGoal: {
+                            needsUpdateConfirmation = false
+                            showUpdateGoal = true
+                        }
+                    )
 
-                    case .failed:
-                        GoalResult(
-                            symbol: "xmark.seal.fill",
-                            title: "You didn't reach your goal this time.",
-                            subtitle: "Want to set another goal?",
-                            onSetGoal: {
-                                needsUpdateConfirmation = false
-                                showUpdateGoal = true
-                            }                        )
+                case .failed:
+                    GoalResult(
+                        symbol: "xmark.seal.fill",
+                        title: "You didn't reach your goal this time.",
+                        subtitle: "Want to set another goal?",
+                        onSetGoal: {
+                            needsUpdateConfirmation = false
+                            showUpdateGoal = true
+                        }
+                    )
 
-                  
                 case nil:
                     Button {
                         viewModel.logLearnedToday()
                     } label: {
-                        Circle()
-                            .fill(viewModel.canLogLearnedToday ? .orange1 : .gray1)
-                            .frame(width: 270, height: 270)
-                            .overlay {
-                                Text(
-                                    viewModel.canLogLearnedToday
-                                    ? "Log as Learned"
-                                    : "Logged as Learned"
-                                )
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundStyle(.white)
-                            }
+                        Text(
+                            viewModel.canLogLearnedToday
+                            ? "Log as Learned"
+                            : "Logged as Learned"
+                        )
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(viewModel.canLogLearnedToday ? .white : .gray)
+                        .frame(width: 272, height: 272)                        .glass(Circle(), fill: viewModel.canLogLearnedToday ? .orange1 : .gray1 , shine: 0.08)
                     }
                     .buttonStyle(.plain)
                     .disabled(!viewModel.canLogLearnedToday)
@@ -170,14 +143,11 @@ struct Activity: View {
                     Button {
                         viewModel.freezeToday()
                     } label: {
-                        Text(viewModel.todayStatus == .frozen ? "Freezed for a day" : "Freeze for a day")
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(width: 295 , height: 46)
-                            .background(
-                                Capsule()
-                                    .fill(viewModel.canFreezeToday ? .cyan : .gray1)
-                            )
+                        Text(viewModel.canFreezeToday ? "Freeze for a day" : "Freezed for a day")
+                            .font(.system(size: 16))
+                            .foregroundStyle(viewModel.canFreezeToday ? .white : .gray)
+                            .frame(width: 272, height: 44)
+                            .glass(Capsule(), fill: viewModel.canFreezeToday ? .cyan : .gray1)
                     }
                     .buttonStyle(.plain)
                     .disabled(!viewModel.canFreezeToday)
@@ -190,6 +160,17 @@ struct Activity: View {
                 Spacer()
             }//V
         }//z
+        .onAppear {
+            viewModel.refresh()
+        }
+        .onReceive(timer) { _ in
+            viewModel.refresh()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                viewModel.refresh()
+            }
+        }
         .navigationDestination(isPresented: $showUpdateGoal) {
             UpdateGoal(
                 goal: viewModel.goal,
@@ -200,6 +181,20 @@ struct Activity: View {
         }
         .navigationDestination(isPresented: $showCalendar) {
             ActivityCalendar(activityViewModel: viewModel)
+        }
+    }
+
+    private func dayColors(for date: Date) -> (circle: Color, text: Color) {
+        let status = viewModel.status(for: date)
+
+        if viewModel.isToday(date) && status == nil {
+            return (.orange1, .white)
+        } else if status == .learned {
+            return (.orange2, .orange1)
+        } else if status == .frozen {
+            return (Color.cyan.opacity(0.2), .cyan)
+        } else {
+            return (.clear, .white)
         }
     }
 
