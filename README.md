@@ -1,4 +1,4 @@
-![LearningTracker app preview](./learningtracker-preview.png)
+![LearningTracker app preview](./LearningJourney.png)
 
 # LearningTracker
 
